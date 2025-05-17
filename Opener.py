@@ -93,7 +93,8 @@ class SoftwareLauncherApp:
                     args_list = software_info.split()
                     # 验证路径和参数是否合法
                     if os.path.exists(args_list[0]):
-                        process = subprocess.Popen(args_list)
+                        # 使用 shell=False 防止命令注入
+                        process = subprocess.Popen(args_list, shell=False)
                         self.processes.append(process)
                         self.update_status(f"已启动软件")
                     else:
@@ -132,6 +133,8 @@ class SoftwareLauncherApp:
                 self.update_status("配置已加载")
             except json.JSONDecodeError as e:
                 messagebox.showerror("错误", f"配置文件格式错误: {e}")
+            except PermissionError as e:
+                messagebox.showerror("错误", f"无法读取配置文件: {e}")
             except Exception as e:
                 messagebox.showerror("错误", f"无法加载配置文件: {e}")
 
@@ -142,6 +145,8 @@ class SoftwareLauncherApp:
             with open(self.config_file, "w", encoding="utf-8") as f:
                 json.dump(config, f, ensure_ascii=False, indent=4)
             self.update_status("配置已保存")
+        except PermissionError as e:
+            messagebox.showerror("错误", f"无法写入配置文件: {e}")
         except Exception as e:
             messagebox.showerror("错误", f"无法保存配置文件: {e}")
 
